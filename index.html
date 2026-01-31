@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حساب المعدل الذكي - جامعة قالمة</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1e40af;
+            --bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --gray: #64748b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; }
+
+        body { background-color: var(--bg); color: var(--text); padding: 10px; line-height: 1.6; }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 30px 15px;
+            text-align: center;
+        }
+
+        .logo-placeholder {
+            width: 70px; height: 70px;
+            background: white; border-radius: 50%;
+            margin: 0 auto 10px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .logo-placeholder img { width: 85%; }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+            background: #fff;
+            border-bottom: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-add { background: var(--success); color: white; }
+        .btn-reset { background: var(--danger); color: white; }
+        .btn-add:hover { opacity: 0.9; }
+
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .subject-card {
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 15px;
+            position: relative;
+            transition: 0.3s;
+        }
+
+        .subject-card:hover { border-color: var(--primary); transform: translateY(-3px); }
+
+        .btn-delete {
+            position: absolute; top: 10px; left: 10px;
+            background: #fee2e2; color: var(--danger);
+            border: none; width: 25px; height: 25px;
+            border-radius: 50%; cursor: pointer; font-weight: bold;
+        }
+
+        .card-header { 
+            font-weight: 800; color: var(--primary);
+            margin-bottom: 15px; padding-left: 30px;
+            outline: none;
+        }
+
+        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.9rem; }
+
+        .coeff-input { width: 60px; padding: 5px; border-radius: 5px; border: 1px solid #cbd5e1; text-align: center; }
+
+        .grades-area { display: flex; gap: 10px; }
+
+        .input-box { flex: 1; }
+        .input-box label { display: block; font-size: 0.7rem; margin-bottom: 5px; color: var(--gray); }
+        .input-box input { 
+            width: 100%; padding: 10px; border: 2px solid #f1f5f9; 
+            border-radius: 8px; text-align: center; font-weight: bold;
+        }
+        .input-box input:focus { border-color: var(--primary); outline: none; }
+
+        .btn-calc {
+            display: block; width: 90%; max-width: 400px;
+            margin: 30px auto; padding: 18px;
+            background: var(--primary); color: white;
+            border: none; border-radius: 50px;
+            font-size: 1.3rem; font-weight: bold; cursor: pointer;
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        .hidden { display: none; }
+
+        /* Modal */
+        #resultModal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); display: none;
+            justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content {
+            background: white; padding: 40px; border-radius: 25px;
+            text-align: center; max-width: 450px; width: 90%;
+            animation: slideUp 0.3s ease-out;
+        }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .gpa-value { font-size: 4rem; font-weight: 900; color: var(--primary); margin: 10px 0; }
+        
+        footer { text-align: center; padding: 20px; color: var(--gray); font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+    <div class="logo-placeholder">
+        <img src=https://tse3.mm.bing.net/th/id/OIP.OkwTFOJDLpKTnSyQf5MaKQHaEo?rs=1&pid=ImgDetMain&o=7&rm=3
+             alt="شعار جامعة قالمة" 
+             onerror="this.src='https://via.placeholder.com/80?text=UG';">
+    </div>
+    <h1>جامعة 8 ماي 1945 - قالمة</h1>
+    <p>منصة حساب المعدل الفصلي الذكية</p>
+</header>
+
+    <div class="controls">
+        <button class="btn btn-add" onclick="addSubject()">+ إضافة مادة جديدة</button>
+        <button class="btn btn-reset" onclick="resetAll()">إعادة تعيين الكل</button>
+    </div>
+
+    <div id="grid" class="subjects-grid"></div>
+
+    <button class="btn-calc" onclick="calculate()">احسب المعدل النهائي</button>
+</div>
+
+<div id="resultModal">
+    <div class="modal-content">
+        <h2>معدلك الفصلي هو</h2>
+        <div class="gpa-value" id="finalGpa">0.00</div>
+        <h3 id="statusText"></h3>
+        <p id="detailsText" style="margin-top:10px; color: #64748b;"></p>
+        <button onclick="closeModal()" style="margin-top:25px; padding:12px 30px; border:none; border-radius:10px; cursor:pointer; background:#f1f5f9; font-weight:bold;">إغلاق</button>
+    </div>
+</div>
+
+<footer>تم التطوير لمساعدة طلبة جامعة قالمة</footer>
+
+<script>
+    // المواد الافتراضية
+    let defaultSubjects = [
+        { id: Date.now() + 1, name: "محاسبة", coeff: 3, hasTd: true, exam: "", td: "" },
+        { id: Date.now() + 2, name: "إحصاء", coeff: 2, hasTd: true, exam: "", td: "" },
+        { id: Date.now() + 3, name: "اقتصاد جزئي", coeff: 3, hasTd: true, exam: "", td: "" }
+    ];
+
+    let subjects = JSON.parse(localStorage.getItem('guelma_subjects')) || defaultSubjects;
+
+    const grid = document.getElementById('grid');
+
+    function init() {
+        grid.innerHTML = "";
+        subjects.forEach(s => renderCard(s));
+    }
+
+    function renderCard(s) {
+        const card = document.createElement('div');
+        card.className = 'subject-card';
+        card.id = `card_${s.id}`;
+        card.innerHTML = `
+            <button class="btn-delete" onclick="removeSubject(${s.id})">×</button>
+            <div class="card-header" contenteditable="true" onblur="updateData(${s.id}, 'name', this.innerText)">${s.name}</div>
+            <div class="row">
+                <span>المعامل: <input type="number" value="${s.coeff}" onchange="updateData(${s.id}, 'coeff', this.value)" class="coeff-input"></span>
+                <label><input type="checkbox" ${s.hasTd ? 'checked' : ''} onchange="toggleTd(${s.id}, this.checked)"> يشمل أعمال موجهة (TD)</label>
+            </div>
+            <div class="grades-area">
+                <div class="input-box ${s.hasTd ? '' : 'hidden'}" id="td_box_${s.id}">
+                    <label>نقطة TD</label>
+                    <input type="number" value="${s.td}" oninput="updateData(${s.id}, 'td', this.value)" placeholder="00" min="0" max="20" step="0.25">
+                </div>
+                <div class="input-box">
+                    <label id="exam_label_${s.id}">${s.hasTd ? 'إمتحان (60%)' : 'إمتحان (100%)'}</label>
+                    <input type="number" value="${s.exam}" oninput="updateData(${s.id}, 'exam', this.value)" placeholder="00" min="0" max="20" step="0.25">
+                </div>
+            </div>
+        `;
+        grid.appendChild(card);
+    }
+
+    function addSubject() {
+        const newSub = { id: Date.now(), name: "مادة جديدة", coeff: 1, hasTd: true, exam: "", td: "" };
+        subjects.push(newSub);
+        renderCard(newSub);
+        save();
+    }
+
+    function removeSubject(id) {
+        subjects = subjects.filter(s => s.id !== id);
+        document.getElementById(`card_${id}`).remove();
+        save();
+    }
+
+    function toggleTd(id, checked) {
+        const s = subjects.find(x => x.id === id);
+        s.hasTd = checked;
+        const tdBox = document.getElementById(`td_box_${id}`);
+        const examLabel = document.getElementById(`exam_label_${id}`);
+        
+        if(checked) {
+            tdBox.classList.remove('hidden');
+            examLabel.innerText = "إمتحان (60%)";
+        } else {
+            tdBox.classList.add('hidden');
+            examLabel.innerText = "إمتحان (100%)";
+            s.td = ""; 
+        }
+        save();
+    }
+
+    function updateData(id, field, value) {
+        const s = subjects.find(x => x.id === id);
+        if(field === 'coeff') s.coeff = parseFloat(value) || 0;
+        else if(field === 'name') s.name = value;
+        else s[field] = value;
+        save();
+    }
+
+    function save() {
+        localStorage.setItem('guelma_subjects', JSON.stringify(subjects));
+    }
+
+    function calculate() {
+        let totalWeighted = 0;
+        let totalCoeffs = 0;
+        let error = false;
+
+        subjects.forEach(s => {
+            let exam = parseFloat(s.exam) || 0;
+            let td = parseFloat(s.td) || 0;
+            
+            if(exam > 20 || td > 20 || exam < 0 || td < 0) error = true;
+
+            let avg = s.hasTd ? (td * 0.4 + exam * 0.6) : exam;
+            totalWeighted += (avg * s.coeff);
+            totalCoeffs += s.coeff;
+        });
+
+        if(error) {
+            alert("عذراً! لا يمكن أن تكون العلامة أكبر من 20 أو أقل من 0.");
+            return;
+        }
+
+        const final = totalCoeffs > 0 ? (totalWeighted / totalCoeffs) : 0;
+        
+        document.getElementById('finalGpa').innerText = final.toFixed(2);
+        const status = document.getElementById('statusText');
+        const details = document.getElementById('detailsText');
+
+        if(final >= 10) {
+            status.innerText = "ناجح 🎉 هنيئاً لك!";
+            status.style.color = "var(--success)";
+            details.innerText = "لقد استوفيت شروط النجاح لهذا الفصل.";
+        } else {
+            status.innerText = "راسب ⚠️ لا تقلق!";
+            status.style.color = "var(--danger)";
+            details.innerText = "يمكنك التعويض في الامتحانات الاستدراكية.";
+        }
+        document.getElementById('resultModal').style.display = 'flex';
+    }
+
+    function closeModal() { document.getElementById('resultModal').style.display = 'none'; }
+
+    function resetAll() {
+        if(confirm("هل أنت متأكد من مسح جميع البيانات؟")) {
+            localStorage.removeItem('guelma_subjects');
+            subjects = [...defaultSubjects];
+            init();
+        }
+    }
+
+    window.onload = init;
+</script>
+
+</body>
+</html>
